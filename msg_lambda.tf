@@ -22,9 +22,78 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "lambda_exec_role_sqs" {
   role = "${aws_iam_role.iam_role_for_lambda.name}"
-  //policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-  //policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
   policy_arn = "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_exec_role_dynamodb" {
+  role = "${aws_iam_role.iam_role_for_lambda.name}"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess"
+}
+
+resource "aws_iam_policy" "kms_decrypt" {
+  name        = "custom_kms_policy"
+  path        = "/"
+
+  policy = <<EOF
+{
+  "Version" : "2012-10-17",
+  "Statement" : [
+      {
+          "Effect" : "Allow",
+          "Action" : [
+              "kms:*"
+          ],
+          "Resource" : [
+              "*"
+            ]
+        }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_exec_role_kms" {
+  role = "${aws_iam_role.iam_role_for_lambda.name}"
+  policy_arn = "arn:aws:iam::${var.aws_account_id}:policy/${aws_iam_policy.kms_decrypt.name}"
+}
+
+
+# Creating SQS 
+resource "aws_sqs_queue" "msg_dlq" {
+  name                      = "msg_dlq"
+  max_message_size          = 2048
+  message_retention_seconds = 3600
+
+}
+
+
+resource "aws_sqs_queue" "msg_queue" {
+  name                      = "${var.msg_sqs_name}"
+  max_message_size          = 2048
+  message_retention_seconds = 3600
+  redrive_policy            = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.msg_dlq.arn}\",\"maxReceiveCount\":2}"
+
+}
+
+# Creating DynamoDB table
+
+resource "aws_dynamodb_table" "message_table" {
+  name           = "${var.msg_ddb_name}"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 10
+  write_capacity = 10
+  hash_key       = "MessageId"
+  range_key      = "Timestamp"
+
+  attribute {
+    name = "MessageId"
+    type = "S"
+  }
+
+  attribute {
+    name = "Timestamp"
+    type = "S"
+  }
 }
 
 # Here is a first lambda function that will run the code `msg_lambda.handler`
@@ -35,6 +104,8 @@ module "lambda" {
   role    = "${aws_iam_role.iam_role_for_lambda.arn}"
   //aws_subnets = "${var.aws_subnets}"
   //aws_sg = "${var.aws_sg}"
+  msg_sqs_name = "DUMMY"
+  msg_ddb_name = "${var.msg_ddb_name}"
 }
 
 # This is a second lambda function that will run the code
@@ -47,6 +118,28 @@ module "lambda_post" {
   role    = "${aws_iam_role.iam_role_for_lambda.arn}"
   //aws_subnets = "${var.aws_subnets}"
   //aws_sg = "${var.aws_sg}"
+  msg_sqs_name = "${var.msg_sqs_name}"
+  msg_ddb_name = "DUMMY"
+}
+
+# This is a third lambda function that will run the code
+# `msg_lambda.sqs_handler`
+module "lambda_sqs" {
+  source  = "./lambda"
+  name    = "msg_lambda"
+  handler = "sqs_handler"
+  runtime = "python3.6"
+  role    = "${aws_iam_role.iam_role_for_lambda.arn}"
+  //aws_subnets = "${var.aws_subnets}"
+  //aws_sg = "${var.aws_sg}"
+  msg_sqs_name = "${var.msg_sqs_name}"
+  msg_ddb_name = "${var.msg_ddb_name}"
+}
+
+# Creating SQS event for lambda
+resource "aws_lambda_event_source_mapping" "exec_sqs_handler" {
+  event_source_arn = "${aws_sqs_queue.msg_queue.arn}"
+  function_name    = module.lambda_sqs.arn
 }
 
 # Now, we need an API to expose those functions publicly

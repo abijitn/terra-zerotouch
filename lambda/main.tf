@@ -32,6 +32,14 @@ data "aws_security_group" "vpc_sg" {
 }
 */
 
+variable "msg_sqs_name" {
+  description = "The name of the SQS queue"
+
+}
+variable "msg_ddb_name" {
+  description = "The name of the DynamoDB table"
+
+}
 resource "aws_lambda_function" "lambda" {
 
   //depends_on = ["aws_iam_role_policy_attachment.lambda"]
@@ -48,8 +56,17 @@ resource "aws_lambda_function" "lambda" {
       subnet_ids         = ["${data.aws_subnet.vpc_subnet.id}"]
   }
   */
+  environment {
+    variables = {
+      msg_sqs_name = "${var.msg_sqs_name}"
+      msg_ddb_name = "${var.msg_ddb_name}"
+    }
+  }
 }
 
 output "name" {
   value = "${aws_lambda_function.lambda.function_name}"
+}
+output "arn" {
+  value = "${aws_lambda_function.lambda.arn}"
 }

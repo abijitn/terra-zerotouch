@@ -16,4 +16,13 @@ variable "aws_sg" {
   description = "The VPC security groups to associate with the lambda function"
 }
 
-# API Module variables
+# SQS variables
+variable "msg_sqs_name" {
+  description = "The name of the SQS queue"
+  default = "msg_queue"
+}
+
+variable "msg_ddb_name" {
+  description = "The name of the DynamoDB table"
+  default = "msg_table"
+}
