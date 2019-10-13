@@ -2,6 +2,7 @@
 resource "aws_iam_role" "iam_role_for_lambda" {
   name = "iam_role_for_lambda"
 
+
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -18,10 +19,12 @@ resource "aws_iam_role" "iam_role_for_lambda" {
 }
 EOF
 }
-resource "aws_iam_role_policy_attachment" "lambda_exec_role_full" {
+
+resource "aws_iam_role_policy_attachment" "lambda_exec_role_sqs" {
   role = "${aws_iam_role.iam_role_for_lambda.name}"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+  //policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
   //policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
 }
 
 # Here is a first lambda function that will run the code `msg_lambda.handler`
