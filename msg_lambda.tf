@@ -30,8 +30,8 @@ module "lambda" {
   name    = "msg_lambda"
   runtime = "python3.6"
   role    = "${aws_iam_role.iam_role_for_lambda.arn}"
-  aws_subnets = "${var.aws_subnets}"
-  aws_sg = "${var.aws_sg}"
+  //aws_subnets = "${var.aws_subnets}"
+  //aws_sg = "${var.aws_sg}"
 }
 
 # This is a second lambda function that will run the code
@@ -42,8 +42,8 @@ module "lambda_post" {
   handler = "post_handler"
   runtime = "python3.6"
   role    = "${aws_iam_role.iam_role_for_lambda.arn}"
-  aws_subnets = "${var.aws_subnets}"
-  aws_sg = "${var.aws_sg}"
+  //aws_subnets = "${var.aws_subnets}"
+  //aws_sg = "${var.aws_sg}"
 }
 
 # Now, we need an API to expose those functions publicly

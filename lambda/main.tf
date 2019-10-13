@@ -16,6 +16,7 @@ variable "role" {
   description = "IAM role attached to the Lambda Function (ARN)"
 }
 
+/*
 variable "aws_subnets" {
   description = "The VPC subnets to associate with the lambda function"
 }
@@ -29,6 +30,7 @@ data "aws_subnet" "vpc_subnet" {
 data "aws_security_group" "vpc_sg" {
   id     = "${var.aws_sg}"
 }
+*/
 
 resource "aws_lambda_function" "lambda" {
 
@@ -40,10 +42,12 @@ resource "aws_lambda_function" "lambda" {
   handler       = "${var.name}.${var.handler}"
   runtime       = "${var.runtime}"
   // Deploy into a VPC.
+  /*
   vpc_config {
       security_group_ids = ["${data.aws_security_group.vpc_sg.id}"]
       subnet_ids         = ["${data.aws_subnet.vpc_subnet.id}"]
   }
+  */
 }
 
 output "name" {
