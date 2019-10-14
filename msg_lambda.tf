@@ -82,14 +82,14 @@ resource "aws_dynamodb_table" "message_table" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 10
   write_capacity = 10
-  hash_key       = "Message"
+  hash_key       = "Ugly_trick"
   range_key      = "Timestamp"
 
   attribute {
-    name = "Message"
+    name = "Ugly_trick"
     type = "S"
   }
-    attribute {
+  attribute {
     name = "Timestamp"
     type = "S"
   }

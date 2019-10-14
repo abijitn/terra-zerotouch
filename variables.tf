@@ -26,3 +26,12 @@ variable "msg_ddb_name" {
   description = "The name of the DynamoDB table"
   default = "msg_table"
 }
+
+variable "website_dns" {
+  description = "S3 bucket for swagger"
+  default = "swagger-terranotouch"
+}
+variable "swagger_ui_version" {
+  description = "Swagger version"
+  default = "v3.24.0"
+}
