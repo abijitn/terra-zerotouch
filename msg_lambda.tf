@@ -137,7 +137,7 @@ module "lambda_sqs" {
   msg_ddb_name = "${var.msg_ddb_name}"
 }
 
-/* -- Couldn't make it work
+# -- Couldn't make it work - Doesnt work elegantly or consistently. Still leaving it for now.
 # Creating SQS trigger for lambda
 resource "aws_lambda_event_source_mapping" "exec_sqs_handler" {
   event_source_arn = "${aws_sqs_queue.msg_queue.arn}"
@@ -145,7 +145,7 @@ resource "aws_lambda_event_source_mapping" "exec_sqs_handler" {
   batch_size        = 1
   enabled           = true
 }
-*/
+
 
 # Set the lambda execution to CloudWatch event triggered
 resource "aws_cloudwatch_event_rule" "every_one_minute" {
