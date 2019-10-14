@@ -1,0 +1,1 @@
+{"Modules":[{"Key":"lambda_post","Source":"./lambda","Dir":"lambda"},{"Key":"msg_get","Source":"./api_method","Dir":"api_method"},{"Key":"msg_post","Source":"./api_method","Dir":"api_method"},{"Key":"lambda_sqs","Source":"./lambda","Dir":"lambda"},{"Key":"","Source":"","Dir":"."},{"Key":"lambda","Source":"./lambda","Dir":"lambda"}]}

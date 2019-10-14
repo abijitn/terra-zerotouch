@@ -82,18 +82,18 @@ resource "aws_dynamodb_table" "message_table" {
   billing_mode   = "PROVISIONED"
   read_capacity  = 10
   write_capacity = 10
-  hash_key       = "MessageId"
+  hash_key       = "Message"
   range_key      = "Timestamp"
 
   attribute {
-    name = "MessageId"
+    name = "Message"
     type = "S"
   }
-
-  attribute {
+    attribute {
     name = "Timestamp"
     type = "S"
   }
+
 }
 
 # Here is a first lambda function that will run the code `msg_lambda.handler`
@@ -136,10 +136,33 @@ module "lambda_sqs" {
   msg_ddb_name = "${var.msg_ddb_name}"
 }
 
-# Creating SQS event for lambda
+/* -- Couldn't make it work
+# Creating SQS trigger for lambda
 resource "aws_lambda_event_source_mapping" "exec_sqs_handler" {
   event_source_arn = "${aws_sqs_queue.msg_queue.arn}"
   function_name    = module.lambda_sqs.arn
+  batch_size        = 1
+  enabled           = true
+}
+*/
+
+resource "aws_cloudwatch_event_rule" "every_one_minute" {
+    name = "every-one-minute"
+    description = "Fires every one minute"
+    schedule_expression = "rate(2 minutes)"
+}
+
+resource "aws_cloudwatch_event_target" "check_every_min" {
+    rule = "${aws_cloudwatch_event_rule.every_one_minute.name}"
+    arn = module.lambda_sqs.arn
+}
+
+resource "aws_lambda_permission" "allow_cloudwatch_to_call_lambda_sqs" {
+    statement_id = "AllowExecutionFromCloudWatch"
+    action = "lambda:InvokeFunction"
+    function_name = module.lambda_sqs.arn
+    principal = "events.amazonaws.com"
+    source_arn = "${aws_cloudwatch_event_rule.every_one_minute.arn}"
 }
 
 # Now, we need an API to expose those functions publicly
