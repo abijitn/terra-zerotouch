@@ -10,12 +10,9 @@ resource "aws_s3_bucket" "main" {
 }
 data "template_file" "main" {
     template = <<EOF
-curl -L https://github.com/swagger-api/swagger-ui/archive/${var.swagger_ui_version}.tar.gz -o /tmp/swagger-ui.tar.gz
-mkdir -p /tmp/swagger-ui
-tar --strip-components 1 -C /tmp/swagger-ui -xf /tmp/swagger-ui.tar.gz
 
-aws s3 sync --acl public-read /tmp/swagger-ui/dist s3://${aws_s3_bucket.main.bucket} --delete
-rm -rf /tmp/swagger-ui
+aws s3 sync --acl public-read ./swagger-ui/dist s3://${aws_s3_bucket.main.bucket} --delete
+
 EOF
 }
 resource "null_resource" "main" {
