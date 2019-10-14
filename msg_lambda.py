@@ -5,7 +5,7 @@ from datetime import datetime
 import random
 
 QUEUE_NAME = os.environ['msg_sqs_name']
-MAX_QUEUE_MESSAGES = 1
+#MAX_QUEUE_MESSAGES = 1
 DYNAMODB_TABLE = os.environ['msg_ddb_name']
 
 sqs = boto3.resource('sqs')
