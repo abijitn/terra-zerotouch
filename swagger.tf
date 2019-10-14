@@ -7,10 +7,12 @@ resource "aws_s3_bucket" "main" {
         index_document = "index.html"
         error_document = "index.html"
     }
+    depends_on = [aws_api_gateway_deployment.msg_api_deployment]
 }
 data "template_file" "main" {
     template = <<EOF
-
+echo "Need to figure how to get the api_id value to this template"
+echo "aws apigateway get-export --parameters extensions='apigateway' --rest-api-id <api_id> --stage-name production --export-type swagger ./swagger-ui/dist/swagger.json"
 aws s3 sync --acl public-read ./swagger-ui/dist s3://${aws_s3_bucket.main.bucket} --delete
 
 EOF
