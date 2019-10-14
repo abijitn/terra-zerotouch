@@ -1,4 +1,4 @@
-# Lambda role
+# All sorts of IAM permissions - Can be even granular.
 resource "aws_iam_role" "iam_role_for_lambda" {
   name = "iam_role_for_lambda"
 
@@ -58,7 +58,7 @@ resource "aws_iam_role_policy_attachment" "lambda_exec_role_kms" {
 }
 
 
-# Creating SQS 
+# Creating SQS dead letter queue
 resource "aws_sqs_queue" "msg_dlq" {
   name                      = "msg_dlq"
   max_message_size          = 2048
@@ -66,7 +66,7 @@ resource "aws_sqs_queue" "msg_dlq" {
 
 }
 
-
+# This will be the SQS queue to post messages to.
 resource "aws_sqs_queue" "msg_queue" {
   name                      = "${var.msg_sqs_name}"
   max_message_size          = 2048
@@ -75,7 +75,7 @@ resource "aws_sqs_queue" "msg_queue" {
 
 }
 
-# Creating DynamoDB table
+# Creating DynamoDB table 
 
 resource "aws_dynamodb_table" "message_table" {
   name           = "${var.msg_ddb_name}"
@@ -96,7 +96,8 @@ resource "aws_dynamodb_table" "message_table" {
 
 }
 
-# Here is a first lambda function that will run the code `msg_lambda.handler`
+# This first lambda function  will return the latest item from DynamoDB
+# `msg_lambda.handler`
 module "lambda" {
   source  = "./lambda"
   name    = "msg_lambda"
@@ -108,7 +109,7 @@ module "lambda" {
   msg_ddb_name = "${var.msg_ddb_name}"
 }
 
-# This is a second lambda function that will run the code
+# This is a second lambda function that will post message to SQS
 # `msg_lambda.post_handler`
 module "lambda_post" {
   source  = "./lambda"
@@ -122,7 +123,7 @@ module "lambda_post" {
   msg_ddb_name = "DUMMY"
 }
 
-# This is a third lambda function that will run the code
+# This is a third lambda function that will process messages in SQS
 # `msg_lambda.sqs_handler`
 module "lambda_sqs" {
   source  = "./lambda"
@@ -146,6 +147,7 @@ resource "aws_lambda_event_source_mapping" "exec_sqs_handler" {
 }
 */
 
+# Set the lambda execution to CloudWatch event triggered
 resource "aws_cloudwatch_event_rule" "every_one_minute" {
     name = "every-one-minute"
     description = "Fires every one minute"
