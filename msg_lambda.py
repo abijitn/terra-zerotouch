@@ -43,6 +43,7 @@ def post_handler(event, context):
         }
     },MessageBody=json.dumps(event)
     )
+    return { "message": "Random Message-"+datetime.now().isoformat()}
     
 def sqs_handler(event, context):
 
